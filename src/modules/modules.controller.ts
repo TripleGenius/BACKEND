@@ -1,4 +1,4 @@
-import { Controller, Get, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { ModulesService } from './modules.service';
 
@@ -18,7 +18,7 @@ export class ModulesController {
   }
 
   @Get(':slug/questions')
-  getQuestions(@Param('slug') slug: string) {
-    return this.modules.getQuestions(slug);
+  getQuestions(@Param('slug') slug: string, @Query('lang') lang: string) {
+    return this.modules.getQuestions(slug, lang);
   }
 }

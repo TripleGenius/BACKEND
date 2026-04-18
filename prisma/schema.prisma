@@ -31,10 +31,14 @@ model Module {
 }
 
 model Question {
-  id       String @id @default(auto()) @map("_id") @db.ObjectId
-  question String
-  answer   String
-  order    Int    @default(0)
+  id            String  @id @default(auto()) @map("_id") @db.ObjectId
+  question      String
+  answer        String
+  explanation   String?
+  questionMn    String?
+  answerMn      String?
+  explanationMn String?
+  order         Int     @default(0)
 
   moduleId String @db.ObjectId
   module   Module @relation(fields: [moduleId], references: [id])

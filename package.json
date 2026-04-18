@@ -10,7 +10,9 @@
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:seed": "ts-node prisma/seed.ts",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "db:import": "ts-node prisma/import-data.ts",
+    "db:seed-iq": "ts-node prisma/seed-iq.ts"
   },
   "keywords": [],
   "author": "",
