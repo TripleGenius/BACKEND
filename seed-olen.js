@@ -1,28 +1,42 @@
+const { PrismaClient } = require('@prisma/client');
 const fs = require('fs');
+require('dotenv').config();
 
+const prisma = new PrismaClient();
 const data = JSON.parse(fs.readFileSync('./olen.json', 'utf8'));
-const MODULE_ID = process.argv[2];
 
-if (!MODULE_ID) {
-  console.error('Usage: node seed-olen.js <moduleId>');
-  process.exit(1);
-}
+async function main() {
+  const mod = await prisma.module.findUnique({ where: { slug: 'english' } });
+  if (!mod) {
+    console.error('English module not found. Run the main seed first.');
+    process.exit(1);
+  }
 
-const docs = [];
-const keys = Object.keys(data).map(Number).sort((a, b) => a - b);
+  // Remove existing questions for this module
+  await prisma.question.deleteMany({ where: { moduleId: mod.id } });
 
-for (let i = 0; i < keys.length; i += 2) {
-  const qKey = keys[i];
-  const aKey = keys[i + 1];
-  if (aKey === undefined) break;
+  const keys = Object.keys(data).map(Number).sort((a, b) => a - b);
+  let order = 0;
 
-  docs.push({
-    question: data[String(qKey)],
-    answer: data[String(aKey)],
-    order: Math.ceil(qKey / 2),
-    moduleId: { $oid: MODULE_ID },
+  for (const key of keys) {
+    const entry = data[String(key)];
+    await prisma.question.create({
+      data: {
+        question: entry.en,
+        answer: entry.mn,
+        order: order++,
+        moduleId: mod.id,
+      },
+    });
+  }
+
+  // Update progress totals for all users on this module
+  await prisma.progress.updateMany({
+    where: { moduleId: mod.id },
+    data: { total: keys.length, completed: 0 },
   });
+
+  console.log(`✅ Inserted ${keys.length} English vocabulary questions into MongoDB.`);
 }
 
-fs.writeFileSync('./olen-seed.json', JSON.stringify(docs, null, 2));
-console.log(`Written ${docs.length} documents to olen-seed.json`);
+main().catch(console.error).finally(() => prisma.$disconnect());
