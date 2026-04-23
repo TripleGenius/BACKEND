@@ -62,19 +62,51 @@ async function importAlash(moduleId: string) {
 }
 
 async function importOlen(moduleId: string) {
-  const data: Record<string, string> = readJson(path.join(MPA, 'eskendir/eskendir.json'));
-  const entries = Object.values(data);
+  const data: { question: string; answer: string; order: number }[] =
+    readJson(path.join(__dirname, '../olen-seed.json'));
 
-  // Сондгой entry (1,3,5...) = question, жүп entry (2,4,6...) = answer
-  const questions: any[] = [];
-  for (let i = 0; i < entries.length - 1; i += 2) {
-    questions.push({
-      question: entries[i],    // 1-р мөр (сондгой)
-      answer: entries[i + 1],  // 2-р мөр (жүп)
-      order: Math.floor(i / 2),
+  const questions = data.map((item, i) => ({
+    question: item.question,
+    answer: item.answer,
+    order: item.order ?? i,
+    moduleId,
+  }));
+
+  await prisma.question.createMany({ data: questions });
+  return questions.length;
+}
+
+async function importTapqirliq(moduleId: string) {
+  const keywords: Record<string, string> = readJson(path.join(MPA, 'taphirlih/tap.json'));
+  const proverbs: Record<string, string> = readJson(path.join(MPA, 'taphirlih/tap_answer.json'));
+
+  const proverbList = Object.values(proverbs);
+
+  const questions: any[] = Object.values(keywords).map((word: string, i: number) => {
+    const matched = proverbList
+      .filter(p => word.split(' ').some(part => p.toLowerCase().includes(part.toLowerCase())))
+      .join('\n');
+    return {
+      question: `«${word}» сөзі кіретін мақалды атаңыз`,
+      answer: matched || proverbList[i % proverbList.length],
+      order: i,
       moduleId,
-    });
-  }
+    };
+  });
+
+  await prisma.question.createMany({ data: questions });
+  return questions.length;
+}
+
+async function importSozdik(moduleId: string) {
+  const data: { word: string; meaning: string }[] = readJson(path.join(MPA, 'hara_soz/hara_soz.json'));
+
+  const questions = data.map((item, i) => ({
+    question: item.word,
+    answer: item.meaning,
+    order: i,
+    moduleId,
+  }));
 
   await prisma.question.createMany({ data: questions });
   return questions.length;
@@ -83,7 +115,7 @@ async function importOlen(moduleId: string) {
 async function main() {
   console.log('📦 Import эхэлж байна...\n');
 
-  const targets = ['english', 'alash', 'olen'];
+  const targets = ['english', 'alash', 'olen', 'tapqirliq', 'sozdik'];
 
   for (const slug of targets) {
     await clearModule(slug);
@@ -98,9 +130,11 @@ async function main() {
     }
 
     let count = 0;
-    if (slug === 'english') count = await importEnglish(mod.id);
-    if (slug === 'alash')   count = await importAlash(mod.id);
-    if (slug === 'olen')    count = await importOlen(mod.id);
+    if (slug === 'english')    count = await importEnglish(mod.id);
+    if (slug === 'alash')      count = await importAlash(mod.id);
+    if (slug === 'olen')       count = await importOlen(mod.id);
+    if (slug === 'tapqirliq')  count = await importTapqirliq(mod.id);
+    if (slug === 'sozdik')     count = await importSozdik(mod.id);
 
     await prisma.progress.updateMany({
       where: { moduleId: mod.id },
