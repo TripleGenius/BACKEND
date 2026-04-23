@@ -22,13 +22,18 @@ export class ProgressService {
   }
 
   async update(userId: string, moduleSlug: string, completed: number) {
-    const mod = await this.prisma.module.findUnique({ where: { slug: moduleSlug } });
+    const mod = await this.prisma.module.findUnique({
+      where: { slug: moduleSlug },
+      include: { _count: { select: { questions: true } } },
+    });
     if (!mod) return null;
+
+    const total = mod._count.questions;
 
     return this.prisma.progress.upsert({
       where: { userId_moduleId: { userId, moduleId: mod.id } },
-      update: { completed },
-      create: { userId, moduleId: mod.id, completed, total: 0 },
+      update: { completed, total },
+      create: { userId, moduleId: mod.id, completed, total },
     });
   }
 }
