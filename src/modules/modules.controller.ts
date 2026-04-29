@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, Query, UseGuards, Request } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { ModulesService } from './modules.service';
 
@@ -12,13 +12,22 @@ export class ModulesController {
     return this.modules.findAll();
   }
 
+  @Get('sozdik/words')
+  getSozdikWords() {
+    return this.modules.getSozdikWords();
+  }
+
   @Get(':slug')
   findOne(@Param('slug') slug: string) {
     return this.modules.findBySlug(slug);
   }
 
   @Get(':slug/questions')
-  getQuestions(@Param('slug') slug: string, @Query('lang') lang: string) {
-    return this.modules.getQuestions(slug, lang);
+  getQuestions(
+    @Param('slug') slug: string,
+    @Query('lang') lang: string,
+    @Request() req: any,
+  ) {
+    return this.modules.getQuestions(slug, lang, req.user.id);
   }
 }

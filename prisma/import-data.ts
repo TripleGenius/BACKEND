@@ -99,11 +99,14 @@ async function importTapqirliq(moduleId: string) {
 }
 
 async function importSozdik(moduleId: string) {
-  const data: { word: string; meaning: string }[] = readJson(path.join(MPA, 'hara_soz/hara_soz.json'));
+  const data: { үг: string; утга: string[] }[] = readJson(
+    path.join(__dirname, '../triple-data.json'),
+  );
 
   const questions = data.map((item, i) => ({
-    question: item.word,
-    answer: item.meaning,
+    question: item['үг'],
+    answer: item['утга'][0],
+    explanation: JSON.stringify(item['утга']),
     order: i,
     moduleId,
   }));

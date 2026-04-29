@@ -9,6 +9,7 @@ COPY prisma ./prisma
 COPY src ./src
 COPY tsconfig.json ./
 COPY prisma.config.ts ./
+COPY triple-data.json ./
 
 RUN npx prisma generate
 RUN npm run build
@@ -22,6 +23,7 @@ RUN npm ci --omit=dev
 
 COPY prisma ./prisma
 COPY prisma.config.ts ./
+COPY triple-data.json ./
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
