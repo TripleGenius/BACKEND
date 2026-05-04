@@ -13,7 +13,8 @@
     "db:studio": "prisma studio",
     "db:import": "ts-node prisma/import-data.ts",
     "db:seed-iq": "ts-node prisma/seed-iq.ts",
-    "db:seed-sozdik": "ts-node prisma/seed-sozdik.ts"
+    "db:seed-sozdik": "ts-node prisma/seed-sozdik.ts",
+    "db:seed-english": "ts-node prisma/seed-english.ts"
   },
   "keywords": [],
   "author": "",
